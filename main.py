@@ -1,11 +1,8 @@
+import os
 import logging
 from telegram import Update
-from telegram.ext import filters, MessageHandler, ApplicationBuilder, CommandHandler, ContextTypes
-import os
 from telegram import InlineQueryResultArticle, InputTextMessageContent
-from telegram.ext import InlineQueryHandler
-
-import replicate
+from telegram.ext import filters, MessageHandler, ApplicationBuilder, CommandHandler, ContextTypes, InlineQueryHandler
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 os.environ.get("REPLICATE_API_TOKEN")
@@ -18,7 +15,7 @@ logging.basicConfig(
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.message.from_user
-    intro_message = 'Olá {}! Eu sou o {}.'.format(user['username'], context.bot.name)
+    intro_message = 'Olá {}, eu sou o {}.'.format(user['username'], context.bot.name)
     await context.bot.send_message(chat_id=update.effective_chat.id, text=intro_message)
     description = "Eu sou capaz de gerar texto alternativo através de uma imagem. Me envie uma imagem em formato de arquivo, sem compressão para iniciar."
     await context.bot.send_message(chat_id=update.effective_chat.id, text=description)
@@ -55,8 +52,9 @@ async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def downloader(update, context):
     file = await context.bot.get_file(update.message.document)
+    filename = file.file_path.split('/')[-1]
     await context.bot.send_message(chat_id=update.effective_chat.id, text='Baixando imagem...')
-    await file.download_to_drive('file_name')
+    await file.download_to_drive('./photos/' + filename)
 
     await context.bot.send_message(chat_id=update.effective_chat.id, text='Gerando resultado...')
     result = get_alt_text(file.file_path)
@@ -73,14 +71,14 @@ def get_alt_text(image_url):
 def main():
     application = ApplicationBuilder().token(BOT_TOKEN).build()
     echo_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), echo)
-    image_handler = MessageHandler(filters.PHOTO, image)
+    # image_handler = MessageHandler(filters.PHOTO, image)
 
     start_handler = CommandHandler('start', start)
     caps_handler = CommandHandler('caps', caps)
 
     application.add_handler(MessageHandler(filters.Document.ALL, downloader))
     application.add_handler(echo_handler)
-    application.add_handler(image_handler)
+    # application.add_handler(image_handler)
     application.add_handler(start_handler)
     application.add_handler(caps_handler)
 
