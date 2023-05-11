@@ -1,5 +1,6 @@
 import os
 import logging
+import replicate
 from telegram import Update
 from telegram import InlineQueryResultArticle, InputTextMessageContent
 from telegram.ext import filters, MessageHandler, ApplicationBuilder, CommandHandler, ContextTypes, InlineQueryHandler
