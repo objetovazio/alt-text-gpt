@@ -93,7 +93,7 @@ def get_alt_text(img_url):
 
   print('> keywords found: ' + keywordString)
 
-  if (keywordString == '' and False):
+  if (keywordString == ''):
     print(">>> empty keywords. program ended.")
     return ""
   #end-if()

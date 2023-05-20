@@ -1,12 +1,24 @@
-2023-05-11 00:01:26,837 - telegram.ext.Application - INFO - Application started
-2023-05-11 00:01:44,258 - telegram.ext.Application - ERROR - No error handlers are registered, logging exception.
+2023-05-11 17:57:27,924 - telegram.ext.Application - INFO - Application started
+2023-05-11 17:57:41,150 - telegram.ext.Application - INFO - Application started
+2023-05-11 18:05:50,124 - telegram.ext.Application - INFO - Application started
+2023-05-11 18:06:39,017 - telegram.ext.Application - INFO - Application started
+2023-05-11 18:06:39,727 - telegram.ext.Application - INFO - Application is stopping. This might take a moment.
+2023-05-11 18:06:39,727 - telegram.ext.Application - INFO - Application.stop() complete
+2023-05-11 18:06:43,173 - telegram.ext.Application - INFO - Application started
+2023-05-11 18:10:49,650 - telegram.ext.Application - INFO - Application started
+2023-05-11 18:12:37,756 - telegram.ext.Application - INFO - Application started
+2023-05-11 18:13:07,679 - telegram.ext.Application - ERROR - No error handlers are registered, logging exception.
 Traceback (most recent call last):
   File "/home/andre/.local/lib/python3.10/site-packages/telegram/ext/_application.py", line 1124, in process_update
     await coroutine
   File "/home/andre/.local/lib/python3.10/site-packages/telegram/ext/_handler.py", line 141, in handle_update
     return await self.callback(update, context)
-  File "/mnt/c/github/alt-text-gpt/main.py", line 52, in image
-    obj.download()
-AttributeError: 'File' object has no attribute 'download'
-2023-05-11 17:40:32,772 - telegram.ext.Application - INFO - Application started
-2023-05-11 17:43:26,966 - telegram.ext.Application - INFO - Application started
+  File "/mnt/c/github/alt-text-gpt/main.py", line 68, in downloader
+    result = call_gpt(result)
+  File "/mnt/c/github/alt-text-gpt/main.py", line 95, in call_gpt
+    return text.trim()
+AttributeError: 'str' object has no attribute 'trim'
+2023-05-11 18:14:00,429 - telegram.ext.Application - INFO - Application started
+2023-05-11 18:24:55,279 - telegram.ext.Application - INFO - Application started
+2023-05-11 18:39:29,907 - telegram.ext.Application - INFO - Application started
+2023-05-11 18:50:53,724 - telegram.ext.Application - INFO - Application started

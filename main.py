@@ -1,12 +1,20 @@
 import os
+import json
 import logging
 import replicate
+import requests
+from concurrent.futures import as_completed, ThreadPoolExecutor
+
 from telegram import Update
 from telegram import InlineQueryResultArticle, InputTextMessageContent
 from telegram.ext import filters, MessageHandler, ApplicationBuilder, CommandHandler, ContextTypes, InlineQueryHandler
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 os.environ.get("REPLICATE_API_TOKEN")
+
+# open-api statements
+open_api_url = os.getenv('open_api_url')
+open_api_key = os.getenv('open_api_key')
 
 logging.basicConfig(
     filename='./output.log',
@@ -59,7 +67,35 @@ async def downloader(update, context):
 
     await context.bot.send_message(chat_id=update.effective_chat.id, text='Gerando resultado...')
     result = get_alt_text(file.file_path)
+    result = call_gpt(result)
     await context.bot.send_message(chat_id=update.effective_chat.id, text=result)
+
+def call_gpt(alt_text):
+  prompt = "Please translate the following to PT-BR: \n" + alt_text
+
+  data = {
+    'model': "text-davinci-003",
+    'prompt': prompt,
+    'temperature': 0.7,
+    'max_tokens': 256,
+    'top_p': 1,
+    'frequency_penalty': 0,
+    'presence_penalty': 0,
+    'best_of': 1,
+    'stop': ["####"],
+  }
+
+  auth_header = {
+    "Authorization": "Bearer " + open_api_key,
+    'contentType': "application/json",
+  }
+
+  response = requests.post(url=open_api_url, headers=auth_header, json=data)
+  data = json.loads(response.text)
+  text = data['choices'][0]['text']
+
+  return text.rstrip()
+#end-call_gpt() 
 
 def get_alt_text(image_url): 
     # Run ML Model with imageUrl
