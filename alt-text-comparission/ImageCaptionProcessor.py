@@ -3,6 +3,9 @@ import pandas as pd
 import logging
 import replicate
 
+import tensorflow as tf
+import tensorflow_hub as hub
+
 logging.basicConfig(
     filename='./alt-text-comparission/output.log',
     format="[Log.%(levelname)s][%(asctime)s]: %(message)s",
@@ -30,7 +33,7 @@ class ImageCaptionProcessor:
 
         # If the output file already exists, exit the function
         if os.path.isfile(output_csv_path):
-            logging.warning(f"Output file {output_csv_path} already exists. Skipping generation...")
+            logging.info(f"Output file {output_csv_path} already exists. Skipping generation...")
             return
 
         self.load_csv_data()
@@ -44,7 +47,7 @@ class ImageCaptionProcessor:
             valid_df = pd.DataFrame(valid_rows)
             valid_df.to_csv(output_csv_path, index=False)
         else:
-            logging.warning("No valid images found.")
+            logging.info("No valid images found.")
         
         logging.info("Extract captions completed.")
     #end
@@ -64,21 +67,88 @@ class ImageCaptionProcessor:
     #end
 
     def generate_photos_captions(self, output_csv_path):
-        logging.info("Starting to generate photo captions.")
+            logging.info("Starting to generate photo captions.")
 
-        if os.path.isfile(output_csv_path):
-            logging.warning(f"Output file {output_csv_path} already exists. Skipping...")
-            return
+            if os.path.isfile(output_csv_path):
+                existing_df = pd.read_csv(output_csv_path)
+            else:
+                existing_df = pd.DataFrame(columns=['image', 'caption'])
+                existing_df.to_csv(output_csv_path, mode='a', index=False)
+            
+            for image_file in os.listdir(self.image_dir_path):
+                if image_file.endswith('.jpg') or image_file.endswith('.png'):  # assuming image files are either jpg or png
+                    if image_file in existing_df['image'].values:  # check if caption already exists
+                        logging.info(f"Caption for {image_file} already exists. Skipping...")
+                        continue
+                    
+                    image_path = os.path.join(self.image_dir_path, image_file)
+                    caption = self.extract_text_from_image(image_path).split(": ")[1]
+                    df = pd.DataFrame([{"image": image_file, "caption": caption}])
+                    df.to_csv(output_csv_path, mode='a', index=False, header=False)
 
-        first_row = True
-        for image_file in os.listdir(self.image_dir_path):
-            if image_file.endswith('.jpg') or image_file.endswith('.png'):  # assuming image files are either jpg or png
-                image_path = os.path.join(self.image_dir_path, image_file)
-                caption = self.extract_text_from_image(image_path).split(": ")[1]
-                df = pd.DataFrame([{"image": image_file, "caption": caption}])
-                df.to_csv(output_csv_path, mode='a', index=False, header=first_row)
-                first_row = False
+            logging.info("Generate photo captions completed.")
 
-        logging.info("Generate photo captions completed.")
+    def compare_captions_nnlm(self, captions_csv_path, generated_csv_path, output_csv_path):
+        model = hub.load("https://tfhub.dev/google/tf2-preview/nnlm-en-dim128/1")
+
+        captions_df = pd.read_csv(captions_csv_path)
+        generated_df = pd.read_csv(generated_csv_path)
+
+        results = []
+
+        for _, gen_row in generated_df.iterrows():
+            gen_image = gen_row['image']
+            gen_caption = gen_row['caption']
+            gen_vector = model([gen_caption])
+
+            captions_same_image = captions_df[captions_df['image'] == gen_image]
+
+            for _, caption_row in captions_same_image.iterrows():
+                caption = caption_row['caption'].split(' .')[0]
+                caption_vector = model([caption])
+
+                cosine_similarity = -tf.keras.losses.cosine_similarity(gen_vector, caption_vector, axis=-1).numpy()[0]
+                cosine_similarity_formatted = format(cosine_similarity, '.5f')
+                results.append({"image": gen_image, "generated_caption": gen_caption, "original_caption": caption, "value": cosine_similarity_formatted})
+
+        pd.DataFrame(results).to_csv(output_csv_path, index=False)
     #end
+
+    def compare_captions(self, captions_csv_path, generated_csv_path, output_csv_path):
+        model1 = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
+        model2 = hub.load("https://tfhub.dev/google/tf2-preview/nnlm-en-dim128/1")
+
+        captions_df = pd.read_csv(captions_csv_path)
+        generated_df = pd.read_csv(generated_csv_path)
+
+        results = []
+
+        for _, gen_row in generated_df.iterrows():
+            gen_image = gen_row['image']
+            gen_caption = gen_row['caption']
+            gen_vector1 = model1([gen_caption])
+            gen_vector2 = model2([gen_caption])
+
+            captions_same_image = captions_df[captions_df['image'] == gen_image]
+
+            for _, caption_row in captions_same_image.iterrows():
+                caption = caption_row['caption'].split(' .')[0]
+                caption_vector1 = model1([caption])
+                caption_vector2 = model2([caption])
+
+                cosine_similarity1 = -tf.keras.losses.cosine_similarity(gen_vector1, caption_vector1, axis=-1).numpy()[0]
+                cosine_similarity2 = -tf.keras.losses.cosine_similarity(gen_vector2, caption_vector2, axis=-1).numpy()[0]
+
+                cosine_similarity1_formatted = format(cosine_similarity1, '.5f')
+                cosine_similarity2_formatted = format(cosine_similarity2, '.5f')
+
+                results.append({
+                    "image": gen_image, 
+                    "generated_caption": gen_caption, 
+                    "original_caption": caption, 
+                    "value1": cosine_similarity1_formatted,
+                    "value2": cosine_similarity2_formatted
+                })
+
+        pd.DataFrame(results).to_csv(output_csv_path, index=False)
 
