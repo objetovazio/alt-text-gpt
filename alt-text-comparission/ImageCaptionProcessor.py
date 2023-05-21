@@ -8,28 +8,34 @@ import tensorflow_hub as hub
 
 logging.basicConfig(
     filename='./alt-text-comparission/output.log',
-    format="[Log.%(levelname)s][%(asctime)s]: %(message)s",
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt='%Y-%m-%dT%H:%M:%S',
     level=logging.DEBUG
 )
-
 class ImageCaptionProcessor:
     def __init__(self, image_dir_path, csv_path):
         self.image_dir_path = image_dir_path
         self.csv_path = csv_path
+        
         if not os.path.isdir(self.image_dir_path):
+            logging.error(f"{self.image_dir_path} is not a directory or does not exist.")
             raise ValueError(f"{self.image_dir_path} is not a directory or does not exist.")
+
         if not os.path.isfile(self.csv_path):
+            logging.error(f"{self.csv_path} is not a file or does not exist.")
             raise ValueError(f"{self.csv_path} is not a file or does not exist.")
-        logging.info("ImageCaptionProcessor instaciated successfully.")
-    #end
+        
+        logging.info("ImageCaptionProcessor instantiated successfully.")
+    # end - __init__()
 
     def load_csv_data(self):
         self.data = pd.read_csv(self.csv_path)
+        logging.info("CSV data loaded successfully.")
         return self.data
-    #end
+    # end - load_csv_data()
 
     def extract_captions(self, output_csv_path):
-        logging.info("Start Extract captions from existing photos.")
+        logging.info("Start extracting captions from existing photos.")
 
         # If the output file already exists, exit the function
         if os.path.isfile(output_csv_path):
@@ -46,48 +52,60 @@ class ImageCaptionProcessor:
         if valid_rows:
             valid_df = pd.DataFrame(valid_rows)
             valid_df.to_csv(output_csv_path, index=False)
+            logging.info("Captions successfully extracted and written to the output file.")
         else:
-            logging.info("No valid images found.")
+            logging.warning("No valid images found.")
         
         logging.info("Extract captions completed.")
-    #end
+    # end - extract_captions()
 
     def extract_text_from_image(self, image_path):
         logging.debug(f"Extracting caption from {image_path}.")
-
-        with open(image_path, "rb") as image:
-            model = "salesforce/blip:2e1dddc8621f72155f24cf2e0adbde548458d3cab9f00c0139eea840d0ac4746"
-            
-            output_text = replicate.run(
-                model,
-                input={"image": image},
-            )
+        
+        try:
+            with open(image_path, "rb") as image:
+                model = "salesforce/blip:2e1dddc8621f72155f24cf2e0adbde548458d3cab9f00c0139eea840d0ac4746"
+                
+                output_text = replicate.run(
+                    model,
+                    input={"image": image},
+                )
+                logging.info(f"Caption successfully extracted from {image_path}.")
+        except Exception as e:
+            logging.error(f"Failed to extract caption from {image_path} due to {str(e)}")
+            return None
 
         return output_text
-    #end
+    # end - extract_text_from_image()
 
     def generate_photos_captions(self, output_csv_path):
-            logging.info("Starting to generate photo captions.")
+        logging.info("Starting to generate photo captions.")
 
-            if os.path.isfile(output_csv_path):
-                existing_df = pd.read_csv(output_csv_path)
-            else:
-                existing_df = pd.DataFrame(columns=['image', 'caption'])
-                existing_df.to_csv(output_csv_path, mode='a', index=False)
-            
-            for image_file in os.listdir(self.image_dir_path):
-                if image_file.endswith('.jpg') or image_file.endswith('.png'):  # assuming image files are either jpg or png
-                    if image_file in existing_df['image'].values:  # check if caption already exists
-                        logging.info(f"Caption for {image_file} already exists. Skipping...")
-                        continue
-                    
-                    image_path = os.path.join(self.image_dir_path, image_file)
-                    caption = self.extract_text_from_image(image_path).split(": ")[1]
+        if os.path.isfile(output_csv_path):
+            existing_df = pd.read_csv(output_csv_path)
+        else:
+            existing_df = pd.DataFrame(columns=['image', 'caption'])
+            existing_df.to_csv(output_csv_path, mode='a', index=False)
+        
+        for image_file in os.listdir(self.image_dir_path):
+            if image_file.endswith('.jpg') or image_file.endswith('.png'):  # assuming image files are either jpg or png
+                if image_file in existing_df['image'].values:  # check if caption already exists
+                    logging.info(f"Caption for {image_file} already exists. Skipping...")
+                    continue
+                
+                image_path = os.path.join(self.image_dir_path, image_file)
+                caption = self.extract_text_from_image(image_path)
+                if caption:
+                    caption = caption.split(": ")[1]
                     df = pd.DataFrame([{"image": image_file, "caption": caption}])
                     df.to_csv(output_csv_path, mode='a', index=False, header=False)
+                    logging.info(f"Generated caption for {image_file} and added it to the output file.")
+                else:
+                    logging.warning(f"Failed to generate caption for {image_file}. Skipping...")
 
-            logging.info("Generate photo captions completed.")
-
+        logging.info("Generate photo captions completed.")
+    # end - generate_photos_captions()
+    
     def compare_captions_nnlm(self, captions_csv_path, generated_csv_path, output_csv_path):
         model = hub.load("https://tfhub.dev/google/tf2-preview/nnlm-en-dim128/1")
 
@@ -112,7 +130,8 @@ class ImageCaptionProcessor:
                 results.append({"image": gen_image, "generated_caption": gen_caption, "original_caption": caption, "value": cosine_similarity_formatted})
 
         pd.DataFrame(results).to_csv(output_csv_path, index=False)
-    #end
+        logging.info("Comparisons between captions completed and saved to the output file.")
+    # end - compare_captions_nnlm()
 
     def compare_captions(self, captions_csv_path, generated_csv_path, output_csv_path):
         model1 = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
@@ -151,4 +170,6 @@ class ImageCaptionProcessor:
                 })
 
         pd.DataFrame(results).to_csv(output_csv_path, index=False)
+        logging.info("Comparisons between captions completed and saved to the output file.")
+    # end - compare_captions()
 

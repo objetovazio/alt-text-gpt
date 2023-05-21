@@ -5,7 +5,9 @@ from ImageCaptionProcessor import ImageCaptionProcessor
 
 logging.basicConfig(
     filename='./alt-text-comparission/output.log',
-    format="[Log.%(levelname)s][%(asctime)s]: %(message)s",
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    # format="[Log.%(levelname)s][%(asctime)s]: %(message)s",
+    datefmt='%Y-%m-%dT%H:%M:%S',
     level=logging.INFO
 )
 
