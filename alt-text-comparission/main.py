@@ -1,12 +1,12 @@
 import os
 import logging
 from dotenv import load_dotenv
-from ImageCaptionProcessor import ImageCaptionProcessor
+from py_class.TextExtractor import TextExtractorV1
+from py_class.ImageCaptionProcessor import ImageCaptionProcessor
 
 logging.basicConfig(
-    filename='./alt-text-comparission/output.log',
+    filename='./output.log',
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    # format="[Log.%(levelname)s][%(asctime)s]: %(message)s",
     datefmt='%Y-%m-%dT%H:%M:%S',
     level=logging.INFO
 )
@@ -24,8 +24,9 @@ def main():
 
     output_caption_similarity_path = os.getenv('TEXT_SIMILARITY_PATH')
     
+    extractor = TextExtractorV1()
     try:
-        icp = ImageCaptionProcessor(images_dir_path, csv_path)
+        icp = ImageCaptionProcessor(images_dir_path, csv_path, extractor)
         icp.extract_captions(FILTERED_CAPTIONS_PATH)
         icp.generate_photos_captions(generated_caption_path)
         icp.compare_captions(FILTERED_CAPTIONS_PATH, generated_caption_path, output_caption_similarity_path)

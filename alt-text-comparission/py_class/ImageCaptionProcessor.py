@@ -1,21 +1,15 @@
 import os
 import pandas as pd
 import logging
-import replicate
 
 import tensorflow as tf
 import tensorflow_hub as hub
 
-logging.basicConfig(
-    filename='./alt-text-comparission/output.log',
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    datefmt='%Y-%m-%dT%H:%M:%S',
-    level=logging.DEBUG
-)
 class ImageCaptionProcessor:
-    def __init__(self, image_dir_path, csv_path):
+    def __init__(self, image_dir_path, csv_path, text_extractor):
         self.image_dir_path = image_dir_path
         self.csv_path = csv_path
+        self.text_extractor = text_extractor
         
         if not os.path.isdir(self.image_dir_path):
             logging.error(f"{self.image_dir_path} is not a directory or does not exist.")
@@ -59,24 +53,7 @@ class ImageCaptionProcessor:
         logging.info("Extract captions completed.")
     # end - extract_captions()
 
-    def extract_text_from_image(self, image_path):
-        logging.debug(f"Extracting caption from {image_path}.")
-        
-        try:
-            with open(image_path, "rb") as image:
-                model = "salesforce/blip:2e1dddc8621f72155f24cf2e0adbde548458d3cab9f00c0139eea840d0ac4746"
-                
-                output_text = replicate.run(
-                    model,
-                    input={"image": image},
-                )
-                logging.info(f"Caption successfully extracted from {image_path}.")
-        except Exception as e:
-            logging.error(f"Failed to extract caption from {image_path} due to {str(e)}")
-            return None
-
-        return output_text
-    # end - extract_text_from_image()
+    
 
     def generate_photos_captions(self, output_csv_path):
         logging.info("Starting to generate photo captions.")
@@ -94,7 +71,7 @@ class ImageCaptionProcessor:
                     continue
                 
                 image_path = os.path.join(self.image_dir_path, image_file)
-                caption = self.extract_text_from_image(image_path)
+                caption = self.text_extractor.extract_text_from_image_path(image_path)
                 if caption:
                     caption = caption.split(": ")[1]
                     df = pd.DataFrame([{"image": image_file, "caption": caption}])
