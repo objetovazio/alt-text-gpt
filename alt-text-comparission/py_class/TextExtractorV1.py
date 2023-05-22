@@ -1,7 +1,6 @@
 import logging
 import replicate
-from .TextExtractor import AbstractTextExtractor
-
+from .AbstractTextExtractor import AbstractTextExtractor
 
 class TextExtractorV1(AbstractTextExtractor):
     def __init__(self):
@@ -28,6 +27,26 @@ class TextExtractorV1(AbstractTextExtractor):
     # end - extract_text_from_image_path()
     
     def extract_text_from_image_url(self, image_url):
-        pass
+        logging.debug(f"Extracting caption from {image_url}.")
+        
+        try:
+            model = "salesforce/blip:2e1dddc8621f72155f24cf2e0adbde548458d3cab9f00c0139eea840d0ac4746"
+            
+            output_text = replicate.run(
+                model,
+                input={"image": image_url},
+            )
+            
+            if ": " in output_text:
+                output_text = output_text.split(": ")[1]
+            else:
+                logging.warning(f"Unexpected output format for {image_url}. Returning full output_text.")
+            
+            logging.info(f"Caption successfully extracted from {image_url}.")
+
+        except Exception as e:
+            logging.error(f"Failed to extract caption from {image_url} due to {str(e)}")
+            return None
+
+        return output_text
     # end - extract_text_from_image_url()
-    
