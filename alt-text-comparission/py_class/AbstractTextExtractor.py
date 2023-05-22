@@ -1,6 +1,4 @@
 from abc import ABC, abstractmethod
-import logging
-import replicate
 
 class AbstractTextExtractor(ABC):
     def __init__(self):
