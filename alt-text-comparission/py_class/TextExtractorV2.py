@@ -17,13 +17,36 @@ class TextExtractorV2(TextExtractorV1):
     def extract_text_from_image_path(self, image_path):
         salesforce_caption = super().extract_text_from_image_path(image_path)
         
+        language = "English"
+        
         # Add new steps here
         keywords = self.get_keywords_from_image_path(image_path)
         if keywords is not None:
-            prompt = f"Image Caption: {salesforce_caption}\nKeywords: {keywords}"
+            prompt = f"""
+            Oi, ChatGPT. Recebi a legenda '{salesforce_caption}' e palavras-chave  '{keywords}' para descrever uma imagem.
+
+            Por favor, revise e melhore a legenda, usando as palavras-chave quando apropriado. Não invente informações. 
+
+            Lembre-se de adaptar a frase para cada imagem específica, fornecendo informações verdadeiras e concisas, e utilizando sinônimos para palavras complexas, conforme necessário. 
+
+            Lembre-se de ignorar informações redundantes. Caso falte algumas das informações, ignore o tópico.
+
+            Para descrever, use a seguinte formula textual:
+
+            1. Tipo de imagem: [Aponte se é fotografia, cartum, tirinha, ilustração. Breve descrição com até 4 palavras]
+            2. Pessoa: [sexo] [etnia], [posição na imagem]
+            3. Cabelo: [descrição do tipo e cor usando sinônimos]
+            4. Roupa: [descrição do tipo e cor usando sinônimos]
+            5. Objeto: [breve descrição com até 4 palavras]
+            6. Uso do objeto: [breve descrição com até 4 palavras]
+            7. Ambiente: [breve descrição com até 4 palavras]
+
+            A legenda final deve ser clara, direta e acessível para pessoas com deficiência visual.
+            """
+            print(prompt)
             generated_text = self._call_chat_gpt_api(prompt)
             logging.info(f"Generated text: {generated_text}")
-            # Process the generated text as needed
+            return generated_text, keywords
     # end - extract_text_from_image_path()
         
     def extract_text_from_image_url(self, image_url):
@@ -35,9 +58,25 @@ class TextExtractorV2(TextExtractorV1):
         keywords = self.get_keywords_from_image_url(image_url)
         if keywords is not None:
             prompt = f"""
-            Oi, ChatGPT. Recebi a legenda '{salesforce_caption}' e palavras-chave {keywords} para uma imagem. 
-            Por favor, revise e melhore a legenda, usando as palavras-chave quando apropriado, seguindo o estilo da Folha de São Paulo no Instagram. 
-            A legenda final deve ser clara, direta e acessível para pessoas com deficiência visual. Retorne somente a legenda revisada em {language}.
+            Oi, ChatGPT. Recebi a legenda '{salesforce_caption}' e palavras-chave  '{keywords}' para descrever uma imagem.
+
+            Por favor, revise e melhore a legenda, usando as palavras-chave quando apropriado. Não invente informações. 
+
+            Lembre-se de adaptar a frase para cada imagem específica, fornecendo informações verdadeiras e concisas, e utilizando sinônimos para palavras complexas, conforme necessário. 
+
+            Lembre-se de ignorar informações redundantes. Caso falte algumas das informações, ignore o tópico.
+
+            Para descrever, use a seguinte formula textual:
+
+            1. Tipo de imagem: [Aponte se é fotografia, cartum, tirinha, ilustração. Breve descrição com até 4 palavras]
+            2. Pessoa: [sexo] [etnia], [posição na imagem]
+            3. Cabelo: [descrição do tipo e cor usando sinônimos]
+            4. Roupa: [descrição do tipo e cor usando sinônimos]
+            5. Objeto: [breve descrição com até 4 palavras]
+            6. Uso do objeto: [breve descrição com até 4 palavras]
+            7. Ambiente: [breve descrição com até 4 palavras]
+
+            A legenda final deve ser clara, direta e acessível para pessoas com deficiência visual.
             """
             generated_text = self._call_chat_gpt_api(prompt)
             logging.info(f"Generated text: {generated_text}")
@@ -49,10 +88,12 @@ class TextExtractorV2(TextExtractorV1):
         try:
             with open(image_path, "rb") as image:
                 data = {'data': image}
+                params = {'num_keywords': 10}
                 
                 response = requests.post(
                     self.ep_url,
                     files=data,
+                    params=params,
                     auth=self.auth
                 )
                 

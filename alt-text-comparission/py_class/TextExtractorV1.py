@@ -22,6 +22,7 @@ class TextExtractorV1(AbstractTextExtractor):
                 return existing_caption
 
             with open(image_path, "rb") as image:
+                model = "salesforce/blip:2e1dddc8621f72155f24cf2e0adbde548458d3cab9f00c0139eea840d0ac4746"
                 output_text = replicate.run(
                     model,
                     input={"image": image},
@@ -73,7 +74,7 @@ class TextExtractorV1(AbstractTextExtractor):
             image_name = os.path.basename(image_path)
 
         # Load the CSV file into a DataFrame
-        df = pd.read_csv(os.getenv('GENERATED_CAPTION_PATH'))
+        df = pd.read_csv('/mnt/c/github/alt-text-gpt/alt-text-comparission/files/generated-salesforce-captions.csv')
 
         # Check if the caption exists in the DataFrame
         caption = df[df['image'] == image_name]['caption'].values

@@ -1,12 +1,15 @@
 import os
 import pandas as pd
 import logging
+from functools import lru_cache
 
 import tensorflow as tf
 import tensorflow_hub as hub
 
 class ImageCaptionProcessor:
     def __init__(self, image_dir_path, csv_path, text_extractor):
+        self.model1 = self.load_tf_model1()
+        self.model2 = self.load_tf_model2()
         self.image_dir_path = image_dir_path
         self.csv_path = csv_path
         self.text_extractor = text_extractor
@@ -21,6 +24,16 @@ class ImageCaptionProcessor:
         
         logging.info("ImageCaptionProcessor instantiated successfully.")
     # end - __init__()
+
+    @staticmethod
+    @lru_cache(maxsize=1)
+    def load_tf_model1():
+        return hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
+    
+    @staticmethod
+    @lru_cache(maxsize=1)
+    def load_tf_model2():
+        return hub.load("https://tfhub.dev/google/tf2-preview/nnlm-en-dim128/1")
 
     def load_csv_data(self):
         self.data = pd.read_csv(self.csv_path)
@@ -53,32 +66,35 @@ class ImageCaptionProcessor:
         logging.info("Extract captions completed.")
     # end - extract_captions()
 
-    
-
     def generate_photos_captions(self, output_csv_path):
         logging.info("Starting to generate photo captions.")
 
         if os.path.isfile(output_csv_path):
             existing_df = pd.read_csv(output_csv_path)
         else:
-            existing_df = pd.DataFrame(columns=['image', 'caption'])
+            existing_df = pd.DataFrame(columns=['image', 'keywords', 'caption'])
             existing_df.to_csv(output_csv_path, mode='a', index=False)
         
+        new_rows = []
+            
         for image_file in os.listdir(self.image_dir_path):
-            if image_file.endswith('.jpg') or image_file.endswith('.png'):  # assuming image files are either jpg or png
-                if image_file in existing_df['image'].values:  # check if caption already exists
-                    logging.info(f"Caption for {image_file} already exists. Skipping...")
-                    continue
-                
+            if image_file.endswith('.jpg') or image_file.endswith('.png'):
                 image_path = os.path.join(self.image_dir_path, image_file)
-                caption = self.text_extractor.extract_text_from_image_path(image_path)
+                caption, keywords = self.text_extractor.extract_text_from_image_path(image_path)
+                
                 if caption:
-                    caption = caption.split(": ")[1]
-                    df = pd.DataFrame([{"image": image_file, "caption": caption}])
-                    df.to_csv(output_csv_path, mode='a', index=False, header=False)
+                    new_row = {'image': image_file, 'keywords': keywords, 'caption': caption}
+                    new_rows.append(new_row)
                     logging.info(f"Generated caption for {image_file} and added it to the output file.")
                 else:
                     logging.warning(f"Failed to generate caption for {image_file}. Skipping...")
+
+        if new_rows:
+            new_df = pd.DataFrame(new_rows)
+            new_df.to_csv(output_csv_path, mode='a', index=False, header=not os.path.isfile(output_csv_path))
+            logging.info("Generated captions added to the output file.")
+        else:
+            logging.info("No new captions generated.")
 
         logging.info("Generate photo captions completed.")
     # end - generate_photos_captions()

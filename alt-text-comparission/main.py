@@ -29,6 +29,7 @@ def main():
 
     # Generated captions path, which I calls a TextExtractor to generate the file, based of filtered_captions_path file.
     generated_caption_path = os.getenv('GENERATED_CAPTION_PATH')
+    generated_caption_path = "/mnt/c/github/alt-text-gpt/alt-text-comparission/files/generated-chatgpt-captions.csv"
 
     # Output file for analisys of the caption similarity
     output_caption_similarity_path = os.getenv('TEXT_SIMILARITY_V1_PATH')
