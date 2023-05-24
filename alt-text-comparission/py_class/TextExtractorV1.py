@@ -15,7 +15,7 @@ class TextExtractorV1(AbstractTextExtractor):
 
         try:
             # Check if caption exists in the CSV file
-            existing_caption = self.caption_exists_in_csv(image_path)
+            existing_caption = False # self.caption_exists_in_csv(image_path)
 
             if existing_caption:
                 logging.info(f"Caption already exists in CSV for {image_path}. Returning existing caption.")
@@ -27,7 +27,13 @@ class TextExtractorV1(AbstractTextExtractor):
                     model,
                     input={"image": image},
                 )
-                logging.info(f"Caption successfully extracted from {image_path}.")
+            if ": " in output_text:
+                output_text = output_text.split(": ")[1]
+            else:
+                logging.warning(f"Unexpected output format for {image_path}. Returning full output_text.")
+
+            logging.info(f"Caption successfully extracted from {image_path}.")
+
         except Exception as e:
             logging.error(f"Failed to extract caption from {image_path} due to {str(e)}")
             return None
@@ -78,10 +84,14 @@ class TextExtractorV1(AbstractTextExtractor):
 
         # Check if the caption exists in the DataFrame
         caption = df[df['image'] == image_name]['caption'].values
-        if caption:
+        print(caption)
+        print(caption.any())
+        print(caption.any()[0])
+
+        if caption and len(caption) > 0:
             return caption[0]
 
-        return None
+        return None, image_name
 
 
 

@@ -14,35 +14,59 @@ class TextExtractorV2(TextExtractorV1):
 
         self.auth = (self.ep_username, self.ep_api_key)
 
-    def extract_text_from_image_path(self, image_path):
-        salesforce_caption = super().extract_text_from_image_path(image_path)
+    def _get_prompt(self, salesforce_caption, keywords, language="Inglês"):
+        prompt = f"""
+       Siga os passos OBRIGATORIAMENTE.
+        Entrada:
+            legenda:  {salesforce_caption}
+            tags: {keywords}
+            output_langue: {language}
         
-        language = "English"
+        Saída:
+            legenda_gerada: resultado da legenda gerada baseada nos inputs.
+
+        Formato de saída:
+            Output: {{legenda_gerada}}
+
+        Vamos escrever uma legenda para descrever uma imagem seguindo alguns passos. 
+            Irei fornecer 3 inputs: legenda, tags e idioma. Utilizaremos esses 3 inputs para reescrever a legenda. A descrição de cada input é:
+                legenda: legenda Original da imagem em inglês;
+                tags: Array de tuplas contendo dois valores:
+                    - Palavra: String que representa algum elemento da imagem. 
+                    - Score: Float que refere-se à avaliação ou estimativa de um atributo ou qualidade relacionado a imagem referente da legenda. Quanto mais próximo de 1, melhor a sua estimativa. Quanto mais próximo de zero, pior.
+                output_langue: Idioma no qual você deve retornar a nova legenda.
+                
+            
+            Siga os proximos passos:
+
+                1. Leia a legenda e analise o seu contexto. Leia as tags e ordene-as pelo score do maior para menor.
+
+                2. Itere em ordem sobre cada tag e analise se ela pode ser adicionada ao contexto da legenda para melhora-la. Para cada tag, dependedo de do contexto, utilize uma ou mais intruçoes a seguir para a reescrita da legenda na ordem a seguir:
+                    - Tipo de imagem: [Aponte se é fotografia, cartum, tirinha, ilustração. Breve descrição com até 4 palavras]
+                    - Pessoa: [sexo] [cor da pele], [posição na imagem]
+                    - Cabelo: [descrição do tipo e cor usando sinônimos]
+                    - Roupa: [descrição do tipo e cor usando sinônimos]
+                    - Objeto: [breve descrição com até 4 palavras]
+                    - Uso do objeto: [breve descrição com até 4 palavras]
+                    - Ambiente: [breve descrição com até 4 palavras]
+
+                    Ao finalizar, resultado da legenda é utilizado na iteração da tag seguinte.
+
+                3. Após iterar sobre todas as tags, faça uma verificação na legenda original, na legenda de saída e nas tags. Garanta que toda informação existente na legenda de saída está, de certe forma, presente na legenda original ou nas tags.
+
+                4. Faça a traduçao obrigatoriamente da legenda no idioma da entrada output_langue.
+
+                5. Sua resposta final deve ser apenas o texto de legenda_gerada;
+        """
+        return prompt
+
+    def extract_text_from_image_path(self, image_path):
+        salesforce_caption = super().extract_text_from_image_path(image_path) # Chama Versao1
         
         # Add new steps here
         keywords = self.get_keywords_from_image_path(image_path)
         if keywords is not None:
-            prompt = f"""
-            Oi, ChatGPT. Recebi a legenda '{salesforce_caption}' e palavras-chave  '{keywords}' para descrever uma imagem.
-
-            Por favor, revise e melhore a legenda, usando as palavras-chave quando apropriado. Não invente informações. 
-
-            Lembre-se de adaptar a frase para cada imagem específica, fornecendo informações verdadeiras e concisas, e utilizando sinônimos para palavras complexas, conforme necessário. 
-
-            Lembre-se de ignorar informações redundantes. Caso falte algumas das informações, ignore o tópico.
-
-            Para descrever, use a seguinte formula textual:
-
-            1. Tipo de imagem: [Aponte se é fotografia, cartum, tirinha, ilustração. Breve descrição com até 4 palavras]
-            2. Pessoa: [sexo] [etnia], [posição na imagem]
-            3. Cabelo: [descrição do tipo e cor usando sinônimos]
-            4. Roupa: [descrição do tipo e cor usando sinônimos]
-            5. Objeto: [breve descrição com até 4 palavras]
-            6. Uso do objeto: [breve descrição com até 4 palavras]
-            7. Ambiente: [breve descrição com até 4 palavras]
-
-            A legenda final deve ser clara, direta e acessível para pessoas com deficiência visual.
-            """
+            prompt = self._get_prompt(salesforce_caption, keywords)
             print(prompt)
             generated_text = self._call_chat_gpt_api(prompt)
             logging.info(f"Generated text: {generated_text}")
@@ -52,32 +76,10 @@ class TextExtractorV2(TextExtractorV1):
     def extract_text_from_image_url(self, image_url):
         salesforce_caption = super().extract_text_from_image_url(image_url)
 
-        language = "English"
-
         # Add new steps here
         keywords = self.get_keywords_from_image_url(image_url)
         if keywords is not None:
-            prompt = f"""
-            Oi, ChatGPT. Recebi a legenda '{salesforce_caption}' e palavras-chave  '{keywords}' para descrever uma imagem.
-
-            Por favor, revise e melhore a legenda, usando as palavras-chave quando apropriado. Não invente informações. 
-
-            Lembre-se de adaptar a frase para cada imagem específica, fornecendo informações verdadeiras e concisas, e utilizando sinônimos para palavras complexas, conforme necessário. 
-
-            Lembre-se de ignorar informações redundantes. Caso falte algumas das informações, ignore o tópico.
-
-            Para descrever, use a seguinte formula textual:
-
-            1. Tipo de imagem: [Aponte se é fotografia, cartum, tirinha, ilustração. Breve descrição com até 4 palavras]
-            2. Pessoa: [sexo] [etnia], [posição na imagem]
-            3. Cabelo: [descrição do tipo e cor usando sinônimos]
-            4. Roupa: [descrição do tipo e cor usando sinônimos]
-            5. Objeto: [breve descrição com até 4 palavras]
-            6. Uso do objeto: [breve descrição com até 4 palavras]
-            7. Ambiente: [breve descrição com até 4 palavras]
-
-            A legenda final deve ser clara, direta e acessível para pessoas com deficiência visual.
-            """
+            prompt = self._get_prompt(salesforce_caption, keywords)
             generated_text = self._call_chat_gpt_api(prompt)
             logging.info(f"Generated text: {generated_text}")
             return generated_text
@@ -99,7 +101,7 @@ class TextExtractorV2(TextExtractorV1):
                 
             if response.status_code == 200:
                 keywords = response.json().get('keywords', [])
-                keyword_scores = [(keyword['keyword'], keyword['score']) for keyword in keywords]
+                keyword_scores = [(keyword['keyword'], keyword['score']) for keyword in keywords if keyword['score'] >= 0.6]
                 logging.info(f"Keywords successfully extracted from {image_path}: {keyword_scores}.")
                 return keyword_scores
             else:
@@ -124,7 +126,7 @@ class TextExtractorV2(TextExtractorV1):
             
             if response.status_code == 200:
                 keywords = response.json().get('keywords', [])
-                filtered_keywords = [(keyword['keyword'], keyword['score']) for keyword in keywords if keyword['score'] > 0.9]
+                filtered_keywords = [(keyword['keyword'], keyword['score']) for keyword in keywords if keyword['score'] >= 0.6]
                 logging.info(f"Keywords successfully extracted from {image_url}: {filtered_keywords}.")
                 return filtered_keywords
             else:
