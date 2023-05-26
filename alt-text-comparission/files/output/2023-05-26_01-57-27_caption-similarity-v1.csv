@@ -31,7 +31,7 @@ image,generated_caption,original_caption,value1,value2
 2579268572_d78f8436cb.jpg,a roller coaster with a bunch of people on it,There are multiple people going over a loop on an inverted roller coaster,0.67146,0.74758
 2611651553_61f859837e.jpg,a woman with face paint on her body,A naked woman with her body painted,0.66492,0.81747
 2611651553_61f859837e.jpg,a woman with face paint on her body,A nude lady walks in front of a crowd in body paint,0.51061,0.66729
-2611651553_61f859837e.jpg,a woman with face paint on her body,A shirtless woman with paint on her face and mud on her body,0.71074,0.91384
+2611651553_61f859837e.jpg,a woman with face paint on her body,A shirtless woman with paint on her face and mud on her body,0.71075,0.91384
 2611651553_61f859837e.jpg,a woman with face paint on her body,A topless woman with her face painted is covered in mud,0.53242,0.75417
 2611651553_61f859837e.jpg,a woman with face paint on her body,"A young woman , topless except for paint or mud",0.41195,0.50290
 2683985894_167d267dcb.jpg,a woman dressed as a clown on a cell phone,A clown in an orange shirt entertains a crowd,0.58098,0.68384
@@ -94,11 +94,6 @@ image,generated_caption,original_caption,value1,value2
 2998277360_9b4c0192f1.jpg,a woman sitting on a curb holding a sign,Elderly woman in yellow parka pan handling,0.27251,0.35561
 2998277360_9b4c0192f1.jpg,a woman sitting on a curb holding a sign,Man with a yellow coat and a cardboard sign,0.25475,0.68325
 2998277360_9b4c0192f1.jpg,a woman sitting on a curb holding a sign,"Older woman in yellow jacket , holds sign saying "" DOWN AND OUT "" in urban area",0.28622,0.26665
-3004290523_d1319dfdb4.jpg,a man holding a camera up to his face,A man in a cast uses a camcorder while another man watches him,0.48554,0.73981
-3004290523_d1319dfdb4.jpg,a man holding a camera up to his face,A man makes a video while another watches,0.49481,0.66524
-3004290523_d1319dfdb4.jpg,a man holding a camera up to his face,A man with a cast films some video while another man smiles,0.40970,0.65666
-3004290523_d1319dfdb4.jpg,a man holding a camera up to his face,A man with a cast is using a camcorder to record an enjoyable event,0.27959,0.68784
-3004290523_d1319dfdb4.jpg,a man holding a camera up to his face,A man with an arm cast films something on video while another man is looking at the camera,0.53915,0.62827
 3004291093_35d6fd8548.jpg,a man with dreadlocks talking on a cell phone,A man has bleached tips in his Afro style hair and is on a cellphone,0.58008,0.72650
 3004291093_35d6fd8548.jpg,a man with dreadlocks talking on a cell phone,A man with black hair and blonde tips talks on his cellphone,0.59625,0.76785
 3004291093_35d6fd8548.jpg,a man with dreadlocks talking on a cell phone,A man with crazy hair is sitting with his fingers in his ears,0.47249,0.65563
@@ -249,3 +244,8 @@ image,generated_caption,original_caption,value1,value2
 918886676_3323fb2a01.jpg,a dog drinking water out of a faucet,a yellow lab drinks water,0.57230,0.73361
 918886676_3323fb2a01.jpg,a dog drinking water out of a faucet,The yellow dog is drinking water from a bottle,0.65576,0.78764
 918886676_3323fb2a01.jpg,a dog drinking water out of a faucet,Yellow Labrador drinking water from a faucet,0.76369,0.82194
+3004290523_d1319dfdb4.jpg,a man holding a camera up to his face,A man in a cast uses a camcorder while another man watches him,0.48554,0.73981
+3004290523_d1319dfdb4.jpg,a man holding a camera up to his face,A man makes a video while another watches,0.49481,0.66524
+3004290523_d1319dfdb4.jpg,a man holding a camera up to his face,A man with a cast films some video while another man smiles,0.40970,0.65666
+3004290523_d1319dfdb4.jpg,a man holding a camera up to his face,A man with a cast is using a camcorder to record an enjoyable event,0.27959,0.68784
+3004290523_d1319dfdb4.jpg,a man holding a camera up to his face,A man with an arm cast films something on video while another man is looking at the camera,0.53915,0.62827

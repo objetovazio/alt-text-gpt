@@ -6,20 +6,21 @@ from urllib.parse import urlparse
 import pandas as pd
 
 class TextExtractorV1(AbstractTextExtractor):
-    def __init__(self):
+    def __init__(self, get_from_file=False):
         super().__init__()
+        self.get_from_file = get_from_file
         pass
 
     def extract_text_from_image_path(self, image_path):
         logging.debug(f"Extracting caption from {image_path}.")
 
         try:
-            # Check if caption exists in the CSV file
-            existing_caption = False # self.caption_exists_in_csv(image_path)
+            # Get value from file
+            if self.get_from_file:
+                caption = self.get_caption_from_file(image_path)
 
-            if existing_caption:
-                logging.info(f"Caption already exists in CSV for {image_path}. Returning existing caption.")
-                return existing_caption
+                if(caption):
+                    return caption, []
 
             with open(image_path, "rb") as image:
                 model = "salesforce/blip:2e1dddc8621f72155f24cf2e0adbde548458d3cab9f00c0139eea840d0ac4746"
@@ -36,23 +37,22 @@ class TextExtractorV1(AbstractTextExtractor):
 
         except Exception as e:
             logging.error(f"Failed to extract caption from {image_path} due to {str(e)}")
-            return None
+            return None, []
 
-        return output_text
+        return output_text, None
 
     def extract_text_from_image_url(self, image_url):
         logging.debug(f"Extracting caption from {image_url}.")
 
         try:
-            # Check if caption exists in the CSV file
-            existing_caption = self.caption_exists_in_csv(image_url)
+            # Get value from file
+            if self.get_from_file:
+                caption = self.get_caption_from_file(image_url)
 
-            if existing_caption:
-                logging.info(f"Caption already exists in CSV for {image_url}. Returning existing caption.")
-                return existing_caption
+                if caption:
+                    return caption
 
             model = "salesforce/blip:2e1dddc8621f72155f24cf2e0adbde548458d3cab9f00c0139eea840d0ac4746"
-
             output_text = replicate.run(
                 model,
                 input={"image": image_url},
@@ -72,7 +72,7 @@ class TextExtractorV1(AbstractTextExtractor):
         return output_text
 
     """ GAMBIARRA """
-    def caption_exists_in_csv(self, image_path):
+    def get_caption_from_file(self, image_path):
         if image_path.startswith('http://') or image_path.startswith('https://'):
             parsed_url = urlparse(image_path)
             image_name = os.path.basename(parsed_url.path)
@@ -84,17 +84,9 @@ class TextExtractorV1(AbstractTextExtractor):
 
         # Check if the caption exists in the DataFrame
         caption = df[df['image'] == image_name]['caption'].values
-        print(caption)
-        print(caption.any())
-        print(caption.any()[0])
 
         if caption and len(caption) > 0:
             return caption[0]
 
-        return None, image_name
-
-
-
-
-
+        return None
 

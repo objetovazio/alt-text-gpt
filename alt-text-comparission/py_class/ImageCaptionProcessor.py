@@ -7,12 +7,13 @@ import tensorflow as tf
 import tensorflow_hub as hub
 
 class ImageCaptionProcessor:
-    def __init__(self, image_dir_path, csv_path, text_extractor):
+    def __init__(self, image_dir_path, csv_path, text_extractor, check_in_file=False):
         self.model1 = self.load_tf_model1()
         self.model2 = self.load_tf_model2()
         self.image_dir_path = image_dir_path
         self.csv_path = csv_path
         self.text_extractor = text_extractor
+        self.check_in_file = check_in_file
         
         if not os.path.isdir(self.image_dir_path):
             logging.error(f"{self.image_dir_path} is not a directory or does not exist.")
@@ -44,46 +45,72 @@ class ImageCaptionProcessor:
     def extract_captions(self, output_csv_path):
         logging.info("Start extracting captions from existing photos.")
 
-        # If the output file already exists, exit the function
+        # Check if the output file exists
         if os.path.isfile(output_csv_path):
-            logging.info(f"Output file {output_csv_path} already exists. Skipping generation...")
-            return
+            # Open the existing file with pandas
+            output_csv = pd.read_csv(output_csv_path)
+        else:
+            # Create a new DataFrame with 'image' and 'caption' columns
+            output_csv = pd.DataFrame(columns=['image', 'caption'])
+            output_csv.to_csv(output_csv_path, index=False)
 
         self.load_csv_data()
         valid_rows = []
 
         for idx, row in self.data.iterrows():
             if os.path.isfile(os.path.join(self.image_dir_path, row['image'])):
+                if row['image'] in output_csv['image'].values:
+                    logging.info(f"Caption for image {row['image']} already exists in the output file. Skipping...")
+                    continue
                 valid_rows.append(row)
-        
+
         if valid_rows:
             valid_df = pd.DataFrame(valid_rows)
-            valid_df.to_csv(output_csv_path, index=False)
+            output_csv = pd.concat([output_csv, valid_df], ignore_index=True)
+            output_csv.to_csv(output_csv_path, index=False)
             logging.info("Captions successfully extracted and written to the output file.")
         else:
             logging.warning("No valid images found.")
-        
+
         logging.info("Extract captions completed.")
     # end - extract_captions()
+
+    def retrieve_caption_from_csv(self, image_name):
+        df = pd.read_csv('/mnt/c/github/alt-text-gpt/alt-text-comparission/files/generated-salesforce-captions.csv')
+        caption = df.loc[df['image'] == image_name, 'caption'].values
+        if caption and len(caption) > 0:
+            return caption[0]
+        return None
 
     def generate_photos_captions(self, output_csv_path):
         logging.info("Starting to generate photo captions.")
 
+        # Check if the output file exists
         if os.path.isfile(output_csv_path):
+            # Open the existing file with pandas
             existing_df = pd.read_csv(output_csv_path)
         else:
+            # Create a new DataFrame with 'image' and 'caption' columns
             existing_df = pd.DataFrame(columns=['image', 'keywords', 'caption'])
             existing_df.to_csv(output_csv_path, mode='a', index=False)
         
         new_rows = []
             
         for image_file in os.listdir(self.image_dir_path):
+
+            if(self.check_in_file):
+                already_generated = len(existing_df.loc[existing_df['image'] == image_file].values) > 0
+                if(already_generated):
+                    logging.info("{image_file} existis in file... skipping text generation")
+                    continue
+
             if image_file.endswith('.jpg') or image_file.endswith('.png'):
                 image_path = os.path.join(self.image_dir_path, image_file)
                 caption, keywords = self.text_extractor.extract_text_from_image_path(image_path)
                 
                 if caption:
                     new_row = {'image': image_file, 'keywords': keywords, 'caption': caption}
+                    self.retrieve_caption_from_csv('image_file')
                     new_rows.append(new_row)
                     logging.info(f"Generated caption for {image_file} and added it to the output file.")
                 else:

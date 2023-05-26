@@ -5,8 +5,8 @@ import openai
 from .TextExtractorV1 import TextExtractorV1
 
 class TextExtractorV2(TextExtractorV1):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, get_from_file):
+        super().__init__(get_from_file)
         self.ep_url = os.getenv('EVERYPIXEL_API_URL')  # get the EveryPixel API URL from environment variables
         self.ep_username = os.getenv('EVERYPIXEL_USERNAME')  # get the EveryPixel username from environment variables
         self.ep_api_key = os.getenv('EVERYPIXEL_API_KEY')  # get the EveryPixel API key from environment variables
@@ -34,8 +34,7 @@ class TextExtractorV2(TextExtractorV1):
                 tags: Array de tuplas contendo dois valores:
                     - Palavra: String que representa algum elemento da imagem. 
                     - Score: Float que refere-se à avaliação ou estimativa de um atributo ou qualidade relacionado a imagem referente da legenda. Quanto mais próximo de 1, melhor a sua estimativa. Quanto mais próximo de zero, pior.
-                output_langue: Idioma no qual você deve retornar a nova legenda.
-                
+                output_language: Idioma no qual você deve retornar a nova legenda.
             
             Siga os proximos passos:
 
@@ -54,7 +53,7 @@ class TextExtractorV2(TextExtractorV1):
 
                 3. Após iterar sobre todas as tags, faça uma verificação na legenda original, na legenda de saída e nas tags. Garanta que toda informação existente na legenda de saída está, de certe forma, presente na legenda original ou nas tags.
 
-                4. Faça a traduçao obrigatoriamente da legenda no idioma da entrada output_langue.
+                4. Faça a traduçao obrigatoriamente da legenda no idioma da entrada output_language.
 
                 5. Sua resposta final deve ser apenas o texto de legenda_gerada;
         """
