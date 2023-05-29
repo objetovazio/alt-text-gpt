@@ -55,7 +55,7 @@ def main():
 
     # Output file for analisys of the caption similarity
     filename = f"{timestamp}_{os.getenv('TEXT_SIMILARITY_V1_FILE')}"
-    output_caption_similarity_path = f"{files_path}/output/{filename}"
+    output_caption_similarity_path = f"{files_path}/{filename}"
 
     extractor = TextExtractorV1(True)
 

@@ -1,6 +1,6 @@
 import logging
 import replicate
-import os;
+import os
 from .AbstractTextExtractor import AbstractTextExtractor
 from urllib.parse import urlparse
 import pandas as pd
@@ -80,7 +80,9 @@ class TextExtractorV1(AbstractTextExtractor):
             image_name = os.path.basename(image_path)
 
         # Load the CSV file into a DataFrame
-        df = pd.read_csv('/mnt/c/github/alt-text-gpt/alt-text-comparission/files/generated-salesforce-captions.csv')
+        gambiarra_dir = os.getenv('GAMBIARRA_DIR')
+
+        df = pd.read_csv(gambiarra_dir)
 
         # Check if the caption exists in the DataFrame
         caption = df[df['image'] == image_name]['caption'].values

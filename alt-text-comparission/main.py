@@ -53,15 +53,15 @@ def main():
     generated_caption_path = f"{files_path}/{os.getenv('GENERATED_CAPTION_CHATGPT_FILE')}"
 
     # Output file for analisys of the caption similarity
-    filename = f"{timestamp}_{os.getenv('TEXT_SIMILARITY_V2_FILE')}"
-    output_caption_similarity_path = f"{files_path}/output/{filename}"
+    filename = os.getenv('TEXT_SIMILARITY_V2_FILE').format(timestamp=timestamp)
+    output_caption_similarity_path = f"{files_path}/{filename}"
 
     extractor = TextExtractorV2(True)
 
     try:
         icp = ImageCaptionProcessor(images_dir_path, origial_captios_path, extractor, check_in_file=True)
-       # icp.extract_captions(filtered_captions_path)
-        icp.generate_photos_captions(generated_caption_path)
+        #icp.extract_captions(filtered_captions_path)
+        icp.generate_photos_captions(generated_caption_path, True)
         icp.compare_captions(filtered_captions_path, generated_caption_path, output_caption_similarity_path)
 
     except Exception as e:

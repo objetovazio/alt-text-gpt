@@ -14,58 +14,49 @@ class TextExtractorV2(TextExtractorV1):
 
         self.auth = (self.ep_username, self.ep_api_key)
 
-    def _get_prompt(self, salesforce_caption, keywords, language="Inglês"):
+    def _get_prompt(self, salesforce_caption, keywords, language="Portuguese"):
         prompt = f"""
-       Siga os passos OBRIGATORIAMENTE.
-        Entrada:
-            legenda:  {salesforce_caption}
-            tags: {keywords}
-            output_langue: {language}
-        
-        Saída:
-            legenda_gerada: resultado da legenda gerada baseada nos inputs.
+You will act as an advanced image analyzer and caption writer. Given an original English caption of an image, a set of tags associated with the image, and an output language, you will need to rewrite the caption. Your response should be simple and direct, use Output section as format.
+The inputs are:
 
-        Formato de saída:
-            Output: {{legenda_gerada}}
+Inputs:
+    Caption: {salesforce_caption}
+    Tags: {keywords}
+    Output Language: {language}
 
-        Vamos escrever uma legenda para descrever uma imagem seguindo alguns passos. 
-            Irei fornecer 3 inputs: legenda, tags e idioma. Utilizaremos esses 3 inputs para reescrever a legenda. A descrição de cada input é:
-                legenda: legenda Original da imagem em inglês;
-                tags: Array de tuplas contendo dois valores:
-                    - Palavra: String que representa algum elemento da imagem. 
-                    - Score: Float que refere-se à avaliação ou estimativa de um atributo ou qualidade relacionado a imagem referente da legenda. Quanto mais próximo de 1, melhor a sua estimativa. Quanto mais próximo de zero, pior.
-                output_language: Idioma no qual você deve retornar a nova legenda.
-            
-            Siga os proximos passos:
+Output Format:
+    'Caption: {{generated_caption}}'
 
-                1. Leia a legenda e analise o seu contexto. Leia as tags e ordene-as pelo score do maior para menor.
+Important: The generated_caption must be completely based on the input parameters. NEVER add information that is not present in the parameters, such as characteristics, colors, objects, etc. All necessary information is within the input parameters.
 
-                2. Itere em ordem sobre cada tag e analise se ela pode ser adicionada ao contexto da legenda para melhora-la. Para cada tag, dependedo de do contexto, utilize uma ou mais intruçoes a seguir para a reescrita da legenda na ordem a seguir:
-                    - Tipo de imagem: [Aponte se é fotografia, cartum, tirinha, ilustração. Breve descrição com até 4 palavras]
-                    - Pessoa: [sexo] [cor da pele], [posição na imagem]
-                    - Cabelo: [descrição do tipo e cor usando sinônimos]
-                    - Roupa: [descrição do tipo e cor usando sinônimos]
-                    - Objeto: [breve descrição com até 4 palavras]
-                    - Uso do objeto: [breve descrição com até 4 palavras]
-                    - Ambiente: [breve descrição com até 4 palavras]
+Here are the steps you should follow:
 
-                    Ao finalizar, resultado da legenda é utilizado na iteração da tag seguinte.
+1. Read the caption and analyze its context. Read the tags, which will be provided in the format [('word', score)], and order them by score from highest to lowest. If no Tags is giver, jump directly to step 4.
 
-                3. Após iterar sobre todas as tags, faça uma verificação na legenda original, na legenda de saída e nas tags. Garanta que toda informação existente na legenda de saída está, de certe forma, presente na legenda original ou nas tags.
+2. Iterate in order over each tag and analyze if it can be added to the caption's context to enhance it. Tags can refer to anything in the image, such as people, objects, activities, colors, etc. When a tag is evaluated, it should be inserted into the description in one of the following ways:
+    - Image type: [Indicate whether it is a photograph, cartoon, comic strip, illustration. Brief description with up to 4 words]
+    - Ethnicity: Ethnicities should be dealt with in more detail, do not write it directly. Point out one or two characteristics of the ethnicity. Skin color should be described using the IBGE terms: white, black, brown, indigenous, or yellow.
+    - Hair: [description of type and color using synonyms]
+    - Clothing: [description of type and color using synonyms]
+    - Object: [brief description with up to 4 words]
+    - Object usage: [brief description with up to 4 words]
+    - Environment: [brief description with up to 4 words]
 
-                4. Faça a traduçao obrigatoriamente da legenda no idioma da entrada output_language.
+3. After iterating over all the tags, cross-check the original caption, the output caption, and the tags. Ensure that all information present in the output caption is, in some way, present in the original caption or in the tags.
 
-                5. Sua resposta final deve ser apenas o texto de legenda_gerada;
-        """
+4. Translate the final caption to the language specified in the 'output_language' field, considering cultural and regional nuances when applicable.
+
+5. Give the result in output format.
+"""
         return prompt
 
     def extract_text_from_image_path(self, image_path):
-        salesforce_caption = super().extract_text_from_image_path(image_path) # Chama Versao1
+        salesforce_caption, keywords = super().extract_text_from_image_path(image_path) # Chama Versao1
         
         # Add new steps here
         keywords = self.get_keywords_from_image_path(image_path)
         if keywords is not None:
-            prompt = self._get_prompt(salesforce_caption, keywords)
+            prompt = self._get_prompt(salesforce_caption, keywords, 'English')
             print(prompt)
             generated_text = self._call_chat_gpt_api(prompt)
             logging.info(f"Generated text: {generated_text}")

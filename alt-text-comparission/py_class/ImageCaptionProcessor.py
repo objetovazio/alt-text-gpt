@@ -70,7 +70,7 @@ class ImageCaptionProcessor:
             output_csv.to_csv(output_csv_path, index=False)
             logging.info("Captions successfully extracted and written to the output file.")
         else:
-            logging.warning("No valid images found.")
+            logging.warning("No new valid images found.")
 
         logging.info("Extract captions completed.")
     # end - extract_captions()
@@ -82,7 +82,7 @@ class ImageCaptionProcessor:
             return caption[0]
         return None
 
-    def generate_photos_captions(self, output_csv_path):
+    def generate_photos_captions(self, output_csv_path, regenerate=False):
         logging.info("Starting to generate photo captions.")
 
         # Check if the output file exists
@@ -100,8 +100,8 @@ class ImageCaptionProcessor:
 
             if(self.check_in_file):
                 already_generated = len(existing_df.loc[existing_df['image'] == image_file].values) > 0
-                if(already_generated):
-                    logging.info("{image_file} existis in file... skipping text generation")
+                if(already_generated and not regenerate):
+                    logging.info(f"{image_file} existis in file... skipping text generation")
                     continue
 
             if image_file.endswith('.jpg') or image_file.endswith('.png'):
@@ -110,7 +110,6 @@ class ImageCaptionProcessor:
                 
                 if caption:
                     new_row = {'image': image_file, 'keywords': keywords, 'caption': caption}
-                    self.retrieve_caption_from_csv('image_file')
                     new_rows.append(new_row)
                     logging.info(f"Generated caption for {image_file} and added it to the output file.")
                 else:
