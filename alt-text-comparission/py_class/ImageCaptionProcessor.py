@@ -6,7 +6,9 @@ from functools import lru_cache
 import tensorflow as tf
 import tensorflow_hub as hub
 
+
 class ImageCaptionProcessor:
+    """Class with methods to process captions from existing database file"""
     def __init__(self, image_dir_path, csv_path, text_extractor, check_in_file=False):
         self.model1 = self.load_tf_model1()
         self.model2 = self.load_tf_model2()
@@ -43,6 +45,11 @@ class ImageCaptionProcessor:
     # end - load_csv_data()
 
     def extract_captions(self, output_csv_path):
+        """
+        This method extract the captions of images present in image_dir_path for a new output_csv_path.
+        The existing captions are inside
+        
+        """
         logging.info("Start extracting captions from existing photos.")
 
         # Check if the output file exists
@@ -101,7 +108,7 @@ class ImageCaptionProcessor:
             if(self.check_in_file):
                 already_generated = len(existing_df.loc[existing_df['image'] == image_file].values) > 0
                 if(already_generated and not regenerate):
-                    logging.info(f"{image_file} existis in file... skipping text generation")
+                    logging.info(f"{image_file} exists in file... skipping text generation")
                     continue
 
             if image_file.endswith('.jpg') or image_file.endswith('.png'):
