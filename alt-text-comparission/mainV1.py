@@ -12,12 +12,15 @@ timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 # Configure logging to write to a new log file with the timestamp
 log_file = f"./{timestamp}.log"
 
+script_path = os.path.dirname(os.path.realpath(__file__))
+
 # Configure logging to write to file
 logging.basicConfig(
-    filename=f'./logs/{log_file}',
+    filename=f'{script_path}/logs/{log_file}',
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     datefmt="%Y-%m-%dT%H:%M:%S",
-    level=logging.INFO
+    level=logging.INFO,
+    filemode='a'
 )
 
 # Create a console handler to display log messages on the console
@@ -54,15 +57,15 @@ def main():
     generated_caption_path = f"{files_path}/{os.getenv('GENERATED_CAPTION_SALESFORCE_FILE')}"
 
     # Output file for analisys of the caption similarity
-    filename = f"{timestamp}_{os.getenv('TEXT_SIMILARITY_V1_FILE')}"
+    filename = os.getenv('TEXT_SIMILARITY_V2_FILE').format(timestamp=timestamp)
     output_caption_similarity_path = f"{files_path}/{filename}"
 
     extractor = TextExtractorV1(True)
 
     try:
         icp = ImageCaptionProcessor(images_dir_path, origial_captios_path, extractor, check_in_file=True)
-        icp.extract_captions(filtered_captions_path)
-        icp.generate_photos_captions(generated_caption_path)
+        #icp.extract_captions(filtered_captions_path)
+        #icp.generate_photos_captions(generated_caption_path)
         icp.compare_captions(filtered_captions_path, generated_caption_path, output_caption_similarity_path)
 
     except Exception as e:

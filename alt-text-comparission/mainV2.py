@@ -11,12 +11,15 @@ timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 # Configure logging to write to a new log file with the timestamp
 log_file = f"./{timestamp}.log"
 
+script_path = os.path.dirname(os.path.realpath(__file__))
+
 # Configure logging to write to file
 logging.basicConfig(
-    filename=f'./logs/{log_file}',
+    filename=f'{script_path}/logs/{log_file}',
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     datefmt="%Y-%m-%dT%H:%M:%S",
     level=logging.INFO
+    filemode='a'
 )
 
 # Create a console handler to display log messages on the console
@@ -44,7 +47,7 @@ def main():
     files_path = os.getenv('FILES_PATH')
 
     # Path for the Kaggle - Eye For Blind Dataset Captions CSV File - Original File
-    origial_captios_path = f"{files_path}/{os.getenv('ORIGINAL_CAPTIONS_FILE')}"
+    original_captions_path = f"{files_path}/{os.getenv('ORIGINAL_CAPTIONS_FILE')}"
 
     # Path for filtered captions - File with only captions from the local path
     filtered_captions_path = f"{files_path}/{os.getenv('FILTERED_CAPTIONS_FILE')}"
@@ -59,10 +62,16 @@ def main():
     extractor = TextExtractorV2(True)
 
     try:
-        icp = ImageCaptionProcessor(images_dir_path, origial_captios_path, extractor, check_in_file=True)
-        #icp.extract_captions(filtered_captions_path)
+        icp = ImageCaptionProcessor(images_dir_path, original_captions_path, extractor, check_in_file=True)
+        
+        # Filtra legendas de imagens contidas na pasta images_dir_path para um novo arquivo menor.
+        # icp.extract_captions(filtered_captions_path)
+
+        # Executa a geracao de legendas para as fotos contidas em images_dir_path.
         icp.generate_photos_captions(generated_caption_path, True)
-        icp.compare_captions(filtered_captions_path, generated_caption_path, output_caption_similarity_path)
+
+        # Efetua comparação entre legendas geradas.
+        # icp.compare_captions(filtered_captions_path, generated_caption_path, output_caption_similarity_path)
 
     except Exception as e:
         logging.error("Failed to process image captions.", exc_info=True)
