@@ -18,7 +18,7 @@ logging.basicConfig(
     filename=f'{script_path}/logs/{log_file}',
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     datefmt="%Y-%m-%dT%H:%M:%S",
-    level=logging.INFO
+    level=logging.INFO,
     filemode='a'
 )
 
@@ -71,7 +71,7 @@ def main():
         icp.generate_photos_captions(generated_caption_path, True)
 
         # Efetua comparação entre legendas geradas.
-        # icp.compare_captions(filtered_captions_path, generated_caption_path, output_caption_similarity_path)
+        icp.compare_captions(filtered_captions_path, generated_caption_path, output_caption_similarity_path)
 
     except Exception as e:
         logging.error("Failed to process image captions.", exc_info=True)

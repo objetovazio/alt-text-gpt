@@ -6,9 +6,8 @@ from functools import lru_cache
 import tensorflow as tf
 import tensorflow_hub as hub
 
-
 class ImageCaptionProcessor:
-    """Class with methods to process captions from existing database file"""
+    """Class with methods to process captions from existing dataset file"""
     def __init__(self, image_dir_path, csv_path, text_extractor, check_in_file=False):
         self.model1 = self.load_tf_model1()
         self.model2 = self.load_tf_model2()
@@ -47,8 +46,6 @@ class ImageCaptionProcessor:
     def extract_captions(self, output_csv_path):
         """
         This method extract the captions of images present in image_dir_path for a new output_csv_path.
-        The existing captions are inside
-        
         """
         logging.info("Start extracting captions from existing photos.")
 
@@ -189,8 +186,8 @@ class ImageCaptionProcessor:
 
                 results.append({
                     "image": gen_image, 
-                    "generated_caption": gen_caption, 
                     "original_caption": caption, 
+                    "generated_caption": gen_caption, 
                     "value1": cosine_similarity1_formatted,
                     "value2": cosine_similarity2_formatted
                 })
