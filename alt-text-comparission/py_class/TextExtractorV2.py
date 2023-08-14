@@ -36,6 +36,7 @@ Follow the steps to process the inputs, as outlined above.
 
 2. Iterate over each tag and analyze if it can be added to the context of the original_caption to improve the caption. When a tag is evaluated, integrate it into the original_caption using one of the following methods to generate a result based on the tag:
    - Image type: Indicate if it's a photograph, cartoon, comic strip, or illustration. Provide a brief description with up to 4 words.
+   - Characteristics: If referring to a person, indicate nouns referring to age, appearance, size, etc. If referring to an object, add its information.
    - Ethnicity: Provide more detailed treatment for ethnicities, indicating one or two characteristics. Describe skin color using IBGE terms: white, black, brown, indigenous, or yellow.
    - Hair: Provide a description of the type and color using synonyms.
    - Clothing: Provide a description of the type and color using synonyms.
