@@ -65,13 +65,13 @@ def main():
         icp = ImageCaptionProcessor(images_dir_path, original_captions_path, extractor, check_in_file=True)
         
         # Filtra legendas de imagens contidas na pasta images_dir_path para um novo arquivo menor.
-        # icp.extract_captions(filtered_captions_path)
+        icp.extract_captions(filtered_captions_path)
 
         # Executa a geracao de legendas para as fotos contidas em images_dir_path.
         icp.generate_photos_captions(generated_caption_path, True)
 
         # Efetua comparação entre legendas geradas.
-        # icp.compare_captions(filtered_captions_path, generated_caption_path, output_caption_similarity_path)
+        icp.compare_captions(filtered_captions_path, generated_caption_path, output_caption_similarity_path)
 
     except Exception as e:
         logging.error("Failed to process image captions.", exc_info=True)

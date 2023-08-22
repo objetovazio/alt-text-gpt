@@ -110,14 +110,18 @@ class ImageCaptionProcessor:
 
             if image_file.endswith('.jpg') or image_file.endswith('.png'):
                 image_path = os.path.join(self.image_dir_path, image_file)
-                caption, keywords = self.text_extractor.extract_text_from_image_path(image_path)
-                
-                if caption:
-                    new_row = {'image': image_file, 'keywords': keywords, 'caption': caption}
-                    new_rows.append(new_row)
-                    logging.info(f"Generated caption for {image_file} and added it to the output file.")
-                else:
-                    logging.warning(f"Failed to generate caption for {image_file}. Skipping...")
+
+                try:
+                    caption, keywords = self.text_extractor.extract_text_from_image_path(image_path)
+                    if caption:
+                        new_row = {'image': image_file, 'keywords': keywords, 'caption': caption}
+                        new_rows.append(new_row)
+                        logging.info(f"Generated caption for {image_file} and added it to the output file.")
+                    else:
+                        logging.warning(f"Failed to generate caption for {image_file}. Skipping...")
+                except Exception as e:
+                    logging.warning(f"Exception Occurred Generating {image_file}: {e}")
+
 
         if new_rows:
             new_df = pd.DataFrame(new_rows)

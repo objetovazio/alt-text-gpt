@@ -135,18 +135,9 @@ Follow the steps to process the inputs, as outlined above.
 		try:
 			openai.api_key = self.open_api_key
 
-			# response = openai.Completion.create(
-			# 	engine="text-davinci-003",  # Use the desired ChatGPT engine
-			# 	prompt=prompt,
-			# 	max_tokens=100,  # Adjust the maximum number of tokens as needed
-			# 	temperature=0.7,  # Adjust the temperature for text generation
-			# 	n=1,  # Generate a single response
-			# 	stop=None,  # Set stop condition if needed
-			# )
-
 			response = openai.ChatCompletion.create(
-				model="gpt-4",
-				# model="gpt-3.5-turbo",
+				# model="gpt-4",
+				model="gpt-3.5-turbo",
 				messages=[
 					{
       					"role": "system",
@@ -162,7 +153,6 @@ Follow the steps to process the inputs, as outlined above.
 				max_tokens=500,
 				frequency_penalty=0,
 				presence_penalty=0,
-				user="objetovazio"
 			)
 
 			generated_text = response.choices[0].message.content
