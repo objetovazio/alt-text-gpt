@@ -17,7 +17,7 @@ class TextExtractorV2(TextExtractorV1):
 	def _get_prompt(self, salesforce_caption, keywords, language="Portuguese"):
 		prompt = f"""
 Act as an image analyzer and advanced caption writer based on text params. 
-Below are the inputs, their explanations, and values:
+Inputs, explanations, and values:
 
 original_caption: Pre-generated image caption in English
 value: {salesforce_caption}
@@ -145,7 +145,8 @@ Follow the steps to process the inputs, as outlined above.
 			# )
 
 			response = openai.ChatCompletion.create(
-				model="gpt-3.5-turbo",
+				model="gpt-4",
+				# model="gpt-3.5-turbo",
 				messages=[
 					{
       					"role": "system",
@@ -157,7 +158,7 @@ Follow the steps to process the inputs, as outlined above.
 					},
 				],
 				n=1,
-				temperature=0.5,
+				temperature=0.6,
 				max_tokens=500,
 				frequency_penalty=0,
 				presence_penalty=0,

@@ -130,7 +130,9 @@ class ImageCaptionProcessor:
     # end - generate_photos_captions()
     
     def compare_captions_nnlm(self, captions_csv_path, generated_csv_path, output_csv_path):
-        model = hub.load("https://tfhub.dev/google/tf2-preview/nnlm-en-dim128/1")
+        model = self.model2
+
+        self.model1
 
         captions_df = pd.read_csv(captions_csv_path)
         generated_df = pd.read_csv(generated_csv_path)
@@ -157,8 +159,8 @@ class ImageCaptionProcessor:
     # end - compare_captions_nnlm()
 
     def compare_captions(self, captions_csv_path, generated_csv_path, output_csv_path):
-        model1 = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
-        model2 = hub.load("https://tfhub.dev/google/tf2-preview/nnlm-en-dim128/1")
+        model1 = self.model1
+        model2 = self.model2
 
         captions_df = pd.read_csv(captions_csv_path)
         generated_df = pd.read_csv(generated_csv_path)

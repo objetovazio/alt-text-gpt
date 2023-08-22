@@ -71,7 +71,7 @@ def main():
         icp.generate_photos_captions(generated_caption_path, True)
 
         # Efetua comparação entre legendas geradas.
-        icp.compare_captions(filtered_captions_path, generated_caption_path, output_caption_similarity_path)
+        # icp.compare_captions(filtered_captions_path, generated_caption_path, output_caption_similarity_path)
 
     except Exception as e:
         logging.error("Failed to process image captions.", exc_info=True)

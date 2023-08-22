@@ -57,7 +57,7 @@ def main():
     generated_caption_path = f"{files_path}/{os.getenv('GENERATED_CAPTION_SALESFORCE_FILE')}"
 
     # Output file for analisys of the caption similarity
-    filename = os.getenv('TEXT_SIMILARITY_V2_FILE').format(timestamp=timestamp)
+    filename = os.getenv('TEXT_SIMILARITY_V1_FILE').format(timestamp=timestamp)
     output_caption_similarity_path = f"{files_path}/{filename}"
 
     extractor = TextExtractorV1(True)
