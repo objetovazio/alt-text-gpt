@@ -35,7 +35,8 @@ class ImageCaptionProcessor:
     @staticmethod
     @lru_cache(maxsize=1)
     def load_tf_model2():
-        return hub.load("https://tfhub.dev/google/tf2-preview/nnlm-en-dim128/1")
+        #return hub.load("https://tfhub.dev/google/tf2-preview/nnlm-en-dim128/1")
+        return hub.load("https://tfhub.dev/google/nnlm-en-dim128/2")
 
     def load_csv_data(self):
         self.data = pd.read_csv(self.csv_path)
